@@ -12,14 +12,64 @@ final class SyntaxAnalyzer {
     
     /// Dosyadaki tüm declaration'ları topla
     func analyzeFile(at path: String) throws -> [Declaration] {
-        let url = URL(fileURLWithPath: path)
-        let source = try String(contentsOf: url, encoding: .utf8)
+        // Sistem framework dosyalarını atla
+        if isSystemPath(path) {
+            return []
+        }
         
-        let sourceFile = Parser.parse(source: source)
+        let url = URL(fileURLWithPath: path)
+        
+        // Dosya okuma hatalarını gracefully handle et
+        guard let source = try? String(contentsOf: url, encoding: .utf8) else {
+            print("⚠️  Dosya okunamadı: \(path)")
+            return []
+        }
+        
+        // Import statement'ları kaldır (SwiftParser SDK dosyalarını parse etmeye çalışmasın)
+        let cleanedSource = removeImports(from: source)
+        
+        // Parse et
+        let sourceFile = Parser.parse(source: cleanedSource)
         let visitor = DeclarationVisitor(filePath: path, sourceText: source)
         visitor.walk(sourceFile)
-        
         return visitor.declarations
+    }
+    
+    /// Import statement'ları kaldır (sadece parse için)
+    private func removeImports(from source: String) -> String {
+        var lines = source.components(separatedBy: .newlines)
+        
+        for i in 0..<lines.count {
+            let trimmed = lines[i].trimmingCharacters(in: .whitespaces)
+            if trimmed.hasPrefix("import ") {
+                // Import satırını boş satır yap (satır numaralarını korumak için)
+                lines[i] = ""
+            }
+        }
+        
+        return lines.joined(separator: "\n")
+    }
+    
+    /// Sistem yolu mu kontrol et
+    private func isSystemPath(_ path: String) -> Bool {
+        let systemPaths = [
+            "/Applications/Xcode.app/Contents/Developer",
+            "/Library/Developer",
+            "/System/Library",
+            "/usr/lib",
+            "/usr/include",
+            "DerivedData",
+            ".swiftinterface",
+            ".swiftmodule"
+        ]
+        
+        for systemPath in systemPaths {
+            if path.contains(systemPath) {
+                return true
+            }
+        }
+        
+        return false
     }
     
     /// Birden fazla dosyayı analiz et

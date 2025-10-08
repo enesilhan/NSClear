@@ -196,8 +196,9 @@ final class InteractiveTUI {
         print("🔧 Modifiers: \(decl.modifiers.isEmpty ? "-" : decl.modifiers.joined(separator: ", "))")
         print("")
         print("💡 Sebep: \(finding.reason)")
+        print("")
         print("🎯 Risk Skoru: \(finding.riskScore)/100")
-        print("⚠️  Risk Seviyesi: \(finding.riskLevel.rawValue) - \(finding.riskLevel.description)")
+        print("⚠️  Risk Seviyesi: \(finding.riskLevel.rawValue)")
         print("")
         print("📌 Referanslar: \(finding.references.count) adet")
         for ref in finding.references.prefix(5) {
@@ -206,6 +207,12 @@ final class InteractiveTUI {
         if finding.references.count > 5 {
             print("   ... ve \(finding.references.count - 5) tane daha")
         }
+        print("")
+        print("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+        print("")
+        print("📋 ÖNERİLEN AKSİYON:")
+        print("")
+        print(finding.suggestedAction)
         print("")
         print(String(repeating: "=", count: 80))
         print("\nDevam etmek için Enter'a basın...")

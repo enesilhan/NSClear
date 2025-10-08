@@ -25,6 +25,9 @@ extension NSClear {
         @Option(name: .long, help: "Xcode workspace yolu (.xcworkspace)")
         var workspace: String?
         
+        @Option(name: .long, help: "Xcode project yolu (.xcodeproj)")
+        var project: String?
+        
         @Option(name: .long, help: "Xcode scheme adı")
         var scheme: String?
         
@@ -55,6 +58,9 @@ extension NSClear {
         @Flag(name: .long, help: "Verbose output")
         var verbose: Bool = false
         
+        @Flag(name: .long, help: "Fast mode (syntax-only, no index store)")
+        var fast: Bool = false
+        
         mutating func run() async throws {
             // Working directory belirle
             let workingDir = packagePath ?? FileManager.default.currentDirectoryPath
@@ -75,29 +81,45 @@ extension NSClear {
                 finalConfig.maxAutoSelectRisk = maxRisk
             }
             
-            // Index store yolunu tespit et
-            let indexStore = Analyzer.detectIndexStore(
-                workspacePath: workspace,
-                packagePath: packagePath,
-                providedPath: indexStorePath
-            )
+            // Index store yolunu tespit et (fast mode'da skip)
+            let indexStore: String?
             
-            if indexStore == nil {
-                print("⚠️  Index store bulunamadı. Referans analizi sınırlı olacak.")
-                print("💡 Index store oluşturmak için:")
-                if workspace != nil {
-                    print("   xcodebuild -workspace \(workspace!) -scheme \(scheme ?? "YourScheme") build")
-                } else {
-                    print("   swift build -Xswiftc -index-store-path -Xswiftc .build/index/store")
-                }
+            if fast {
+                print("🚀 Fast mode: Sadece syntax analizi (index store kullanılmıyor)")
+                print("   ⚡ Daha hızlı ama daha az doğru")
+                print("   💡 Tam analiz için --fast flag'ini kaldırın")
                 print("")
+                indexStore = nil
+            } else {
+                indexStore = Analyzer.detectIndexStore(
+                    workspacePath: workspace,
+                    projectPath: project,
+                    packagePath: packagePath,
+                    providedPath: indexStorePath
+                )
+                
+                if indexStore == nil {
+                    print("⚠️  Index store bulunamadı. Referans analizi sınırlı olacak.")
+                    print("💡 Index store oluşturmak için:")
+                    if let ws = workspace {
+                        print("   xcodebuild -workspace \(ws) -scheme \(scheme ?? "YourScheme") build")
+                    } else if let proj = project {
+                        print("   xcodebuild -project \(proj) -scheme \(scheme ?? "YourScheme") build")
+                    } else {
+                        print("   swift build -Xswiftc -index-store-path -Xswiftc .build/index/store")
+                    }
+                    print("")
+                    print("🚀 Alternatif: Fast mode kullanın (--fast)")
+                    print("")
+                }
             }
             
             // Analizi çalıştır
             let analyzer = Analyzer(
                 workingDirectory: workingDir,
                 indexStorePath: indexStore,
-                config: finalConfig
+                config: finalConfig,
+                useFastMode: fast
             )
             
             let result = try await analyzer.analyze()
@@ -184,7 +206,7 @@ extension NSClear {
                 print("⚠️  Commit edilmemiş değişiklikler var. Devam edilsin mi? (yes/no): ", terminator: "")
                 guard let response = readLine()?.lowercased(), response == "yes" || response == "y" else {
                     print("❌ İşlem iptal edildi")
-                    return
+            return
                 }
             }
             
@@ -306,7 +328,7 @@ extension NSClear {
                 reportContent = reporter.generateMarkdownReport()
             case "xcode":
                 reportContent = reporter.generateXcodeDiagnostics()
-            default:
+        default:
                 reportContent = reporter.generateTextReport()
             }
             
