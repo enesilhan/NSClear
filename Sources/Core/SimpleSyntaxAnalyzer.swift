@@ -64,12 +64,10 @@ final class SimpleSyntaxAnalyzer {
     
     private func parseClass(line: String, lineNumber: Int, filePath: String) -> Declaration? {
         let pattern = #"(public |private |internal |fileprivate |open )?(final )?class\s+(\w+)"#
-        guard let match = line.range(of: pattern, options: .regularExpression) else { return nil }
+        guard let className = extractName(from: line, pattern: pattern) else { return nil }
         
-        let matched = String(line[match])
+        let matched = String(line.range(of: pattern, options: .regularExpression).map { line[$0] } ?? "")
         let components = matched.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-        
-        guard let className = components.last else { return nil }
         
         let accessLevel = extractAccessLevel(from: components)
         let attributes = extractAttributes(from: line)
@@ -89,12 +87,10 @@ final class SimpleSyntaxAnalyzer {
     
     private func parseStruct(line: String, lineNumber: Int, filePath: String) -> Declaration? {
         let pattern = #"(public |private |internal |fileprivate )?(struct)\s+(\w+)"#
-        guard let match = line.range(of: pattern, options: .regularExpression) else { return nil }
+        guard let structName = extractName(from: line, pattern: pattern) else { return nil }
         
-        let matched = String(line[match])
+        let matched = String(line.range(of: pattern, options: .regularExpression).map { line[$0] } ?? "")
         let components = matched.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-        
-        guard let structName = components.last else { return nil }
         
         let accessLevel = extractAccessLevel(from: components)
         let attributes = extractAttributes(from: line)
@@ -114,12 +110,10 @@ final class SimpleSyntaxAnalyzer {
     
     private func parseEnum(line: String, lineNumber: Int, filePath: String) -> Declaration? {
         let pattern = #"(public |private |internal |fileprivate )?(enum)\s+(\w+)"#
-        guard let match = line.range(of: pattern, options: .regularExpression) else { return nil }
+        guard let enumName = extractName(from: line, pattern: pattern) else { return nil }
         
-        let matched = String(line[match])
+        let matched = String(line.range(of: pattern, options: .regularExpression).map { line[$0] } ?? "")
         let components = matched.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-        
-        guard let enumName = components.last else { return nil }
         
         let accessLevel = extractAccessLevel(from: components)
         let attributes = extractAttributes(from: line)
@@ -139,12 +133,10 @@ final class SimpleSyntaxAnalyzer {
     
     private func parseProtocol(line: String, lineNumber: Int, filePath: String) -> Declaration? {
         let pattern = #"(public |private |internal )?(protocol)\s+(\w+)"#
-        guard let match = line.range(of: pattern, options: .regularExpression) else { return nil }
+        guard let protocolName = extractName(from: line, pattern: pattern) else { return nil }
         
-        let matched = String(line[match])
+        let matched = String(line.range(of: pattern, options: .regularExpression).map { line[$0] } ?? "")
         let components = matched.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-        
-        guard let protocolName = components.last else { return nil }
         
         let accessLevel = extractAccessLevel(from: components)
         let attributes = extractAttributes(from: line)
@@ -164,12 +156,10 @@ final class SimpleSyntaxAnalyzer {
     
     private func parseFunction(line: String, lineNumber: Int, filePath: String) -> Declaration? {
         let pattern = #"(public |private |internal |fileprivate |@\w+ )*(func)\s+(\w+)"#
-        guard let match = line.range(of: pattern, options: .regularExpression) else { return nil }
+        guard let funcName = extractName(from: line, pattern: pattern) else { return nil }
         
-        let matched = String(line[match])
+        let matched = String(line.range(of: pattern, options: .regularExpression).map { line[$0] } ?? "")
         let components = matched.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-        
-        guard let funcName = components.last else { return nil }
         
         let accessLevel = extractAccessLevel(from: components)
         let attributes = extractAttributes(from: line)
@@ -188,14 +178,11 @@ final class SimpleSyntaxAnalyzer {
     }
     
     private func parseVariable(line: String, lineNumber: Int, filePath: String) -> Declaration? {
-        // var veya let
         let pattern = #"(public |private |internal |fileprivate |@\w+ )*(var|let)\s+(\w+)"#
-        guard let match = line.range(of: pattern, options: .regularExpression) else { return nil }
+        guard let varName = extractName(from: line, pattern: pattern) else { return nil }
         
-        let matched = String(line[match])
+        let matched = String(line.range(of: pattern, options: .regularExpression).map { line[$0] } ?? "")
         let components = matched.components(separatedBy: .whitespaces).filter { !$0.isEmpty }
-        
-        guard let varName = components.last else { return nil }
         
         let accessLevel = extractAccessLevel(from: components)
         let attributes = extractAttributes(from: line)
@@ -215,6 +202,17 @@ final class SimpleSyntaxAnalyzer {
     }
     
     // MARK: - Helpers
+    
+    /// Extract name from regex capture group (avoids issues with components.last)
+    private func extractName(from line: String, pattern: String, captureGroupIndex: Int = 3) -> String? {
+        guard let regex = try? NSRegularExpression(pattern: pattern),
+              let match = regex.firstMatch(in: line, range: NSRange(line.startIndex..., in: line)),
+              match.numberOfRanges > captureGroupIndex else { return nil }
+        
+        let nameRange = match.range(at: captureGroupIndex)
+        guard let swiftRange = Range(nameRange, in: line) else { return nil }
+        return String(line[swiftRange])
+    }
     
     private func extractAccessLevel(from components: [String]) -> AccessLevel {
         if components.contains("private") { return .private }

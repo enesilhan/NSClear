@@ -294,12 +294,9 @@ final class Analyzer {
         
         // Fast mode: Sadece entry point olmayan ve korumalı olmayan declaration'ları döndür
         return declarations.filter { declaration in
-            // Entry point değilse
             !entryPointIds.contains(declaration.id) &&
-            // Korumalı değilse
             !declaration.hasProtectedAttributes() &&
             !declaration.hasProtectedModifiers() &&
-            // Private veya internal
             (declaration.accessLevel == .private || declaration.accessLevel == .internal)
         }
     }

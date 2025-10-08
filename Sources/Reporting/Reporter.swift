@@ -59,11 +59,8 @@ final class Reporter {
         report += "📁 DOSYA BAZINDA DAĞILIM\n"
         report += String(repeating: "─", count: 80) + "\n"
         let fileDistribution = calculateFileDistribution()
-        for (file, count) in fileDistribution.sorted(by: { $0.value > $1.value }).prefix(10) {
+        for (file, count) in fileDistribution.sorted(by: { $0.value > $1.value }) {
             report += "\(shortenPath(file).padding(toLength: 60, withPad: " ", startingAt: 0)): \(count)\n"
-        }
-        if fileDistribution.count > 10 {
-            report += "... ve \(fileDistribution.count - 10) dosya daha\n"
         }
         report += "\n"
         
@@ -80,16 +77,13 @@ final class Reporter {
         report += "📋 DETAYLI BULGULAR\n"
         report += String(repeating: "─", count: 80) + "\n"
         
-        for (index, finding) in result.findings.enumerated().prefix(50) {
+        for (index, finding) in result.findings.enumerated() {
             report += "\n\(index + 1). \(finding.riskLevel.color) \(finding.declaration.kind.displayName): \(finding.declaration.name)\n"
             report += "   📁 \(shortenPath(finding.declaration.filePath)):\(finding.declaration.line)\n"
             report += "   💡 \(finding.reason)\n"
             report += "   🎯 Risk: \(finding.riskScore)/100 (\(finding.riskLevel.rawValue))\n"
         }
         
-        if result.findings.count > 50 {
-            report += "\n... ve \(result.findings.count - 50) bulgu daha\n"
-        }
         
         report += "\n"
         report += String(repeating: "═", count: 80) + "\n"
@@ -150,14 +144,14 @@ final class Reporter {
         let fileDistribution = calculateFileDistribution()
         markdown += "| Dosya | Kullanılmayan Declaration |\n"
         markdown += "|-------|---------------------------|\n"
-        for (file, count) in fileDistribution.sorted(by: { $0.value > $1.value }).prefix(10) {
+        for (file, count) in fileDistribution.sorted(by: { $0.value > $1.value }) {
             markdown += "| `\(shortenPath(file))` | \(count) |\n"
         }
         markdown += "\n"
         
         // Bulgular
         markdown += "## 📋 Bulgular\n\n"
-        for finding in result.findings.prefix(20) {
+        for finding in result.findings {
             let decl = finding.declaration
             markdown += "### \(finding.riskLevel.color) `\(decl.name)` - \(decl.kind.displayName)\n\n"
             markdown += "- **Dosya:** `\(shortenPath(decl.filePath)):\(decl.line)`\n"
