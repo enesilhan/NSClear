@@ -1,0 +1,125 @@
+# NSClear Configuration File
+# Bu dosya NSClear'ın davranışını yapılandırır
+
+# Analiz edilecek hedefler (optional)
+# targets:
+#   - MyApp
+#   - MyFramework
+
+# Hariç tutulacak dosya/klasör pattern'leri
+exclude:
+  - "**/Tests/**"
+  - "**/*Tests.swift"
+  - "**/.build/**"
+  - "**/DerivedData/**"
+  - "**/Pods/**"
+  - "**/Carthage/**"
+  - "**/.swiftpm/**"
+
+# Entry point yapılandırması
+entryPoints:
+  # @main attribute'unu entry point olarak kabul et
+  detectMain: true
+  
+  # SwiftUI.App türlerini entry point olarak kabul et
+  detectSwiftUIApp: true
+  
+  # UIApplicationMain'i entry point olarak kabul et
+  detectUIApplicationMain: true
+  
+  # Public/open API'yi entry point olarak kabul et
+  includePublicAPI: true
+  
+  # @objc/dynamic sembolleri entry point olarak kabul et
+  includeObjCSymbols: true
+  
+  # Test entry point'lerini dahil et
+  includeTestEntryPoints: true
+  
+  # Özel entry point pattern'leri (regex)
+  customPatterns: []
+
+# Risk skorlama yapılandırması
+riskScoring:
+  # Public/open declaration riski (0-100)
+  publicAPIWeight: 90
+  
+  # @objc/dynamic riski (0-100)
+  objcDynamicWeight: 95
+  
+  # Protocol/witness riski (0-100)
+  protocolWitnessWeight: 85
+  
+  # Selector string varlığı riski (0-100)
+  selectorPresenceWeight: 80
+  
+  # Test-only kod riski (0-100)
+  testOnlyWeight: 40
+  
+  # Private helper riski (0-100)
+  privateHelperWeight: 10
+
+# Koruma kuralları
+protections:
+  # @objc işaretli declaration'ları koru
+  protectObjC: true
+  
+  # dynamic işaretli declaration'ları koru
+  protectDynamic: true
+  
+  # @IBAction/@IBOutlet işaretli declaration'ları koru
+  protectIB: true
+  
+  # @NSManaged işaretli declaration'ları koru
+  protectNSManaged: true
+  
+  # @inlinable/@usableFromInline işaretli declaration'ları koru
+  protectInlinable: true
+  
+  # @_cdecl işaretli declaration'ları koru
+  protectCDecl: true
+  
+  # @_spi işaretli declaration'ları koru
+  protectSPI: true
+  
+  # SwiftUI Preview'ları koru
+  protectPreviews: true
+  
+  # Widget/Intent/Live Activity kodunu koru
+  protectExtensions: true
+  
+  # Storyboard/XIB selector'larını koru
+  protectStoryboardSelectors: true
+
+# Public API kontrolü (dikkatli kullanın!)
+checkPublicAPI: false
+
+# Otomatik seçim için maksimum risk skoru (0-100)
+# Bu değerden düşük risk skoruna sahip declaration'lar otomatik seçilir
+maxAutoSelectRisk: 20
+
+# Test yapılandırması
+testing:
+  # Değişiklik sonrası test çalıştır
+  runTests: true
+  
+  # Xcode build komutu (optional, auto-detect)
+  # xcodebuildCommand: "xcodebuild -workspace MyApp.xcworkspace -scheme MyApp test"
+  
+  # SwiftPM test komutu
+  swiftTestCommand: "swift test"
+  
+  # Test timeout (saniye)
+  timeout: 300
+
+# Git yapılandırması
+git:
+  # Değişiklikleri otomatik commit et
+  autoCommit: true
+  
+  # Branch prefix
+  branchPrefix: "nsclear"
+  
+  # Commit mesaj formatı ({count} yerine silinen declaration sayısı yazılır)
+  commitMessageFormat: "chore: clear unused code ({count} declarations)"
+

@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:NSClear}",
+            "name": "Debug nsclear",
+            "program": "${workspaceFolder:NSClear}/.build/debug/nsclear",
+            "preLaunchTask": "swift: Build Debug nsclear"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:NSClear}",
+            "name": "Release nsclear",
+            "program": "${workspaceFolder:NSClear}/.build/release/nsclear",
+            "preLaunchTask": "swift: Build Release nsclear"
+        }
+    ]
+}
