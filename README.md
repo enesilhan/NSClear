@@ -1,338 +1,393 @@
 # NSClear 🧹
 
-**NSClear** kullanılmayan Swift kodunu bulan, gözden geçiren ve güvenli bir şekilde silen interaktif bir CLI aracıdır.
+**NSClear** is an interactive CLI tool that finds, reviews, and safely removes unused Swift code.
 
 [![Swift](https://img.shields.io/badge/Swift-6.0-orange.svg)](https://swift.org)
 [![Platform](https://img.shields.io/badge/Platform-macOS-lightgrey.svg)](https://www.apple.com/macos)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-## ✨ Özellikler
+[🇹🇷 Türkçe Döküman](README_TR.md)
 
-- 🔍 **Akıllı Analiz**: SwiftSyntax ve IndexStoreDB kullanarak declaration'ları ve referanslarını analiz eder
-- 🎯 **Entry Point Algılama**: `@main`, SwiftUI.App, UIApplicationMain, public API ve daha fazlasını otomatik algılar
-- 🔗 **Reachability Analizi**: Entry point'lerden erişilemeyen kodu tespit eder
-- 📊 **Risk Skorlaması**: Her bulgu için risk skoru hesaplar (0-100)
-- 🛡️ **Güvenlik Korumaları**: `@objc`, `dynamic`, `@IBAction`, `@IBOutlet` ve diğer özel attribute'ları otomatik korur
-- 🎨 **İnteraktif TUI**: Terminal-based kullanıcı arayüzü ile bulguları gözden geçirin
-- 🔧 **Güvenli Silme**: SwiftSyntax ile syntax-aware silme işlemleri
-- 🧪 **Test Entegrasyonu**: Değişiklikler sonrası otomatik test çalıştırma
-- 🌲 **Git Entegrasyonu**: Otomatik branch oluşturma, commit ve revert
-- 📝 **Çoklu Rapor Formatları**: JSON, Text, Markdown, Xcode Diagnostics
+## ✨ Features
 
-## 📦 Kurulum
+- 🔍 **Smart Analysis**: Analyzes declarations and references using SwiftSyntax and IndexStoreDB
+- 🎯 **Entry Point Detection**: Automatically detects `@main`, SwiftUI.App, UIApplicationMain, public API, and more
+- 🔗 **Reachability Analysis**: Identifies code unreachable from entry points
+- 📊 **Risk Scoring**: Calculates risk scores (0-100) for each finding
+- 🛡️ **Safety Guards**: Automatically protects `@objc`, `dynamic`, `@IBAction`, `@IBOutlet`, and other special attributes
+- 🎨 **Interactive TUI**: Terminal-based UI to review findings
+- 🔧 **Safe Deletion**: Syntax-aware deletion using SwiftSyntax
+- 🧪 **Test Integration**: Automatically runs tests after changes
+- 🌲 **Git Integration**: Automatic branch creation, commit, and revert
+- 📝 **Multiple Report Formats**: JSON, Text, Markdown, Xcode Diagnostics
 
-### Gereksinimler
+## 📦 Installation
 
-- macOS 13.0+
-- Xcode 15.0+
-- Swift 6.0+
+### Quick Install (Recommended)
 
-### Swift Package Manager ile
+```bash
+curl -fsSL https://raw.githubusercontent.com/yourusername/NSClear/main/install.sh | sh
+```
+
+### Using Make
+
+```bash
+git clone https://github.com/yourusername/NSClear.git
+cd NSClear
+make install
+```
+
+### Manual Installation
 
 ```bash
 git clone https://github.com/yourusername/NSClear.git
 cd NSClear
 swift build -c release
-```
-
-Binary'yi system path'e kopyalayın:
-
-```bash
 cp .build/release/nsclear /usr/local/bin/
 ```
 
-### Homebrew ile (Yakında)
+### Requirements
+
+- macOS 13.0+
+- Xcode 15.0+
+- Swift 6.0+
+
+## 🚀 Quick Start
+
+### For Xcode Projects
 
 ```bash
-brew install nsclear
-```
-
-## 🚀 Hızlı Başlangıç
-
-### Xcode Projesi için
-
-```bash
-# 1. Önce projenizi build edin (index store oluşturmak için)
+# 1. Build your project first (to generate index store)
 xcodebuild -workspace MyApp.xcworkspace -scheme MyApp build
 
-# 2. NSClear'ı çalıştırın
+# 2. Run NSClear
 nsclear scan --workspace MyApp.xcworkspace --scheme MyApp --interactive
 ```
 
-### SwiftPM Projesi için
+### For SwiftPM Projects
 
 ```bash
-# 1. Index store ile build edin
+# 1. Build with index store
 swift build -Xswiftc -index-store-path -Xswiftc .build/index/store
 
-# 2. NSClear'ı çalıştırın
+# 2. Run NSClear
 nsclear scan --package-path . --index-store-path .build/index/store --interactive
 ```
 
-## 📖 Kullanım
+## 📖 Usage
 
-### Temel Komutlar
+### Basic Commands
 
-#### `scan` - Analiz Yap
+#### `scan` - Analyze Code
 
 ```bash
-# Sadece tarama (değişiklik yapmaz)
+# Scan only (no changes)
 nsclear scan
 
-# İnteraktif mod
+# Interactive mode
 nsclear scan --interactive
 
-# JSON raporu oluştur
+# Generate JSON report
 nsclear scan --format json --write-report report.json
 
-# Xcode diagnostics formatında
+# Xcode diagnostics format
 nsclear scan --format xcode
 
-# Markdown raporu
+# Markdown report
 nsclear scan --format markdown --write-report report.md
 ```
 
-#### `apply` - Değişiklikleri Uygula
+#### `apply` - Apply Changes
 
 ```bash
-# İnteraktif mod ile uygula (önerilen)
+# Interactive mode with apply (recommended)
 nsclear scan --interactive --apply
 
-# Otomatik uygula (max risk 20)
+# Auto-apply (max risk 20)
 nsclear apply --max-risk 20
 
-# Belirli bir workspace için
+# For specific workspace
 nsclear apply --workspace MyApp.xcworkspace --scheme MyApp --max-risk 15
 ```
 
-#### `report` - Rapor Oluştur
+#### `report` - Generate Reports
 
 ```bash
-# JSON'dan text raporu
+# Generate text report from JSON
 nsclear report report.json --format text
 
-# Markdown raporu
+# Generate markdown report
 nsclear report report.json --format markdown --output report.md
 ```
 
-### Konfigürasyon
+### Configuration
 
-Projenizin root dizininde `.nsclear.yml` dosyası oluşturun:
+Create a `.nsclear.yml` file in your project root:
 
 ```yaml
-# Hariç tutulacak dosyalar
+# Excluded files
 exclude:
   - "**/Tests/**"
   - "**/.build/**"
 
-# Risk skorlama
+# Risk scoring
 riskScoring:
   publicAPIWeight: 90
   objcDynamicWeight: 95
   privateHelperWeight: 10
 
-# Koruma kuralları
+# Protection rules
 protections:
   protectObjC: true
   protectDynamic: true
   protectIB: true
 
-# Otomatik seçim için maksimum risk
+# Auto-selection max risk
 maxAutoSelectRisk: 20
 
-# Test yapılandırması
+# Testing
 testing:
   runTests: true
   swiftTestCommand: "swift test"
 
-# Git yapılandırması
+# Git
 git:
   autoCommit: true
   branchPrefix: "nsclear"
 ```
 
-Tam konfigürasyon örneği için [.nsclear.yml](.nsclear.yml) dosyasına bakın.
+See [.nsclear.yml](.nsclear.yml) for a complete configuration example.
 
-## 🎯 Nasıl Çalışır?
+## 🎯 How It Works
 
-1. **Syntax Analizi**: SwiftSyntax ile tüm Swift dosyalarını parse eder ve declaration'ları toplar
-2. **Index Store Analizi**: IndexStoreDB ile sembol referanslarını ve ilişkileri çıkarır
-3. **Entry Point Belirleme**: `@main`, SwiftUI.App, public API gibi entry point'leri tanımlar
-4. **Reachability Analizi**: Entry point'lerden başlayarak erişilebilir kodu belirler
-5. **Risk Skorlaması**: Her kullanılmayan declaration için risk skoru hesaplar
-6. **İnteraktif Gözden Geçirme**: Kullanıcı bulguları gözden geçirir ve seçer
-7. **Güvenli Silme**: Seçilen declaration'ları SwiftSyntax ile siler
-8. **Test & Commit**: Testleri çalıştırır ve başarılıysa commit eder
+1. **Syntax Analysis**: Parses all Swift files using SwiftSyntax and collects declarations
+2. **Index Store Analysis**: Extracts symbol references and relationships using IndexStoreDB
+3. **Entry Point Detection**: Identifies entry points like `@main`, SwiftUI.App, public API
+4. **Reachability Analysis**: Determines reachable code starting from entry points
+5. **Risk Scoring**: Calculates risk scores for each unused declaration
+6. **Interactive Review**: User reviews and selects findings
+7. **Safe Deletion**: Deletes selected declarations using SwiftSyntax
+8. **Test & Commit**: Runs tests and commits if successful
 
-## 🛡️ Güvenlik Özellikleri
+## 🛡️ Safety Features
 
-NSClear, kritik kodu korumak için çeşitli güvenlik mekanizmaları içerir:
+NSClear includes multiple safety mechanisms to protect critical code:
 
-### Otomatik Korunuyor
+### Automatically Protected
 
-- `@objc` ve `dynamic` - Objective-C runtime erişimi
-- `@IBAction`, `@IBOutlet` - Interface Builder bağlantıları
-- `@NSManaged` - Core Data özellikleri
-- `@inlinable`, `@usableFromInline` - ABI stabilitesi
-- `@_cdecl` - C fonksiyon export'ları
+- `@objc` and `dynamic` - Objective-C runtime access
+- `@IBAction`, `@IBOutlet` - Interface Builder connections
+- `@NSManaged` - Core Data properties
+- `@inlinable`, `@usableFromInline` - ABI stability
+- `@_cdecl` - C function exports
 - `@_spi` - System Programming Interface
-- SwiftUI Previews - `_Previews` soneki olan structlar
-- Public/Open API (varsayılan olarak)
+- SwiftUI Previews - Structs ending with `_Previews`
+- Public/Open API (by default)
 
-### Güvenli İşlem Akışı
+### Safe Operation Flow
 
-1. **Dry-run Varsayılan**: `--apply` flag'i olmadan hiçbir değişiklik yapılmaz
-2. **Backup**: Değişiklikler öncesi otomatik backup oluşturulur
-3. **Test Gate**: Testler başarısız olursa değişiklikler geri alınır
-4. **Git Branch**: Değişiklikler yeni branch'te yapılır
-5. **İnteraktif Onay**: Kullanıcı her değişikliği manuel kontrol edebilir
+1. **Dry-run by Default**: No changes without `--apply` flag
+2. **Backup**: Automatic backup before changes
+3. **Test Gate**: Changes reverted if tests fail
+4. **Git Branch**: Changes made on new branch
+5. **Interactive Confirmation**: Manual review of all changes
 
-## 📊 Risk Skorlaması
+## 📊 Risk Scoring
 
-Her bulgu 0-100 arası bir risk skoru alır:
+Each finding receives a risk score from 0-100:
 
-| Risk Seviyesi | Skor | Açıklama |
-|--------------|------|----------|
-| 🟢 Düşük | 0-19 | Private helper'lar, güvenli silme |
-| 🟡 Orta | 20-49 | Internal kod, test kodları |
-| 🟠 Yüksek | 50-79 | Public API, protocol implementasyonları |
-| 🔴 Çok Yüksek | 80-100 | ObjC/dynamic, kritik attributeler |
+| Risk Level | Score | Description |
+|-----------|-------|-------------|
+| 🟢 Low | 0-19 | Private helpers, safe to delete |
+| 🟡 Medium | 20-49 | Internal code, test code |
+| 🟠 High | 50-79 | Public API, protocol implementations |
+| 🔴 Very High | 80-100 | ObjC/dynamic, critical attributes |
 
-Risk skorunu etkileyen faktörler:
-
+Risk factors:
 - Access level (private → open)
-- Attribute'lar (@objc, @IBAction, vb.)
-- Modifier'lar (dynamic)
-- Protocol requirement/witness durumu
-- Referans sayısı
+- Attributes (@objc, @IBAction, etc.)
+- Modifiers (dynamic)
+- Protocol requirement/witness status
+- Reference count
 
-## 🎨 İnteraktif TUI Komutları
+## 🎨 Interactive TUI Commands
 
 ```
-[t <num>]    - Toggle selection (örn: 't 1' veya 't 1-5' veya 't all')
-[v <num>]    - View details (örn: 'v 1')
-[d <num>]    - View diff (örn: 'd 1')
+[t <num>]    - Toggle selection (e.g., 't 1' or 't 1-5' or 't all')
+[v <num>]    - View details (e.g., 'v 1')
+[d <num>]    - View diff (e.g., 'd 1')
 [n]          - Next page
 [p]          - Previous page
 [a]          - Apply deletions
 [q]          - Quit without applying
 ```
 
-## 📝 Örnek Çıktılar
+## 📝 Example Output
 
-### Text Raporu
+### Text Report
 
 ```
 ╔══════════════════════════════════════════════════════════════════════════════╗
-║                        NSClear - Analiz Raporu                               ║
+║                        NSClear - Analysis Report                             ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 
-📊 ÖZET
+📊 SUMMARY
 ────────────────────────────────────────────────────────────────────────────────
-Tarih: Oct 8, 2025 at 10:30 AM
-Toplam Declaration: 542
-Kullanılmayan: 47
-Kullanım Oranı: 91.3%
-Analiz Edilen Dosya: 23
-Entry Point: 12
+Date: Oct 8, 2025 at 10:30 AM
+Total Declarations: 542
+Unused: 47
+Usage Rate: 91.3%
+Analyzed Files: 23
+Entry Points: 12
 
-🎯 RİSK DAĞILIMI
+🎯 RISK DISTRIBUTION
 ────────────────────────────────────────────────────────────────────────────────
-🟢 Low         : 32 adet (68.1%)
-🟡 Medium      : 10 adet (21.3%)
-🟠 High        : 4 adet (8.5%)
-🔴 Very High   : 1 adet (2.1%)
+🟢 Low         : 32 items (68.1%)
+🟡 Medium      : 10 items (21.3%)
+🟠 High        : 4 items (8.5%)
+🔴 Very High   : 1 item (2.1%)
 ```
 
-### JSON Raporu
+### Interactive TUI
 
-```json
-{
-  "findings": [
-    {
-      "id": "...",
-      "declaration": {
-        "kind": "function",
-        "name": "unusedHelper",
-        "filePath": "/path/to/file.swift",
-        "line": 42,
-        "riskScore": 15
-      },
-      "reason": "Entry point değil, hiçbir yerden referans edilmiyor"
-    }
-  ],
-  "totalDeclarations": 542,
-  "unusedCount": 47
-}
+```
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                  NSClear - Unused Code Finder                                ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+📊 Total: 47 unused declarations found
+✅ Selected: 32 declarations
+
+1. [✓] 🟢 Function: unusedHelper
+   📁 Sources/Utils/Helpers.swift:42
+   💡 Not an entry point, no references
+   🎯 Risk: 15/100 (Low)
+
+2. [ ] 🟠 Class: LegacyViewController
+   📁 Sources/UI/Legacy/LegacyViewController.swift:10
+   💡 Not an entry point, 0 references
+   🎯 Risk: 65/100 (High)
+
+────────────────────────────────────────────────────────────────────────────────
+
+🔧 Commands:
+  [t <num>]    - Toggle selection
+  [v <num>]    - View details
+  [d <num>]    - View diff
+  [a]          - Apply deletions
+  [q]          - Quit
 ```
 
-## 🧪 Test
+## 🧪 Testing
 
 ```bash
-# Unit testleri çalıştır
+# Run unit tests
 swift test
 
-# Verbose output ile
+# Run with verbose output
 swift test --verbose
+
+# Or use Make
+make test
 ```
 
-## 🤝 Katkıda Bulunma
+## 🛠️ Development
 
-Katkılarınızı bekliyoruz! Lütfen şu adımları izleyin:
+### Using Make
 
-1. Fork edin
-2. Feature branch oluşturun (`git checkout -b feature/amazing-feature`)
-3. Değişikliklerinizi commit edin (`git commit -m 'feat: add amazing feature'`)
-4. Branch'inizi push edin (`git push origin feature/amazing-feature`)
-5. Pull Request açın
+```bash
+# Build
+make build
 
-### Commit Mesaj Formatı
+# Run tests
+make test
 
-[Conventional Commits](https://www.conventionalcommits.org/) kullanıyoruz:
+# Install locally
+make install
 
-- `feat:` - Yeni özellik
-- `fix:` - Hata düzeltmesi
-- `refactor:` - Kod iyileştirmesi
-- `docs:` - Dokümantasyon
-- `test:` - Test ekleme/düzeltme
-- `chore:` - Build, CI/CD vb.
+# Clean
+make clean
 
-## 🐛 Bilinen Sorunlar ve Sınırlamalar
+# Show all commands
+make help
+```
 
-1. **IndexStore Gereksinimi**: En iyi sonuçlar için index store gereklidir
-2. **SwiftUI Property Wrappers**: Bazı durumlarda @State, @Binding vb. yanlış pozitif verebilir
-3. **Objective-C Interop**: Objective-C'den kullanılan Swift kodu tam tespit edilemeyebilir
-4. **Reflection/Mirrors**: Runtime reflection ile erişilen kod tespit edilemez
-5. **String-based Selectors**: Selector stringleri statik analiz ile tam tespit edilemez
+### Manual Commands
 
-## 🗺️ Yol Haritası
+```bash
+# Build release
+swift build -c release
 
-- [ ] GitHub Action entegrasyonu
-- [ ] Xcode Source Editor Extension
-- [ ] CI/CD pipeline entegrasyonu (Jenkins, CircleCI)
-- [ ] Web-based rapor görüntüleyici
-- [ ] Incremental analysis (sadece değişen dosyalar)
-- [ ] Multi-module Swift Package desteği
-- [ ] Performance optimizasyonları
-- [ ] ML-based false positive detection
+# Build debug
+swift build -c debug
 
-## 📄 Lisans
+# Run tests
+swift test
 
-Bu proje MIT lisansı altında lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakın.
+# Format code (requires swiftformat)
+swiftformat Sources/ Tests/
 
-## 🙏 Teşekkürler
+# Lint (requires swiftlint)
+swiftlint
+```
 
-- [swift-syntax](https://github.com/apple/swift-syntax) - Swift parser ve syntax tree
-- [IndexStoreDB](https://github.com/apple/indexstore-db) - Index store erişimi
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'feat: add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+### Commit Message Format
+
+We use [Conventional Commits](https://www.conventionalcommits.org/):
+
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `refactor:` - Code improvement
+- `docs:` - Documentation
+- `test:` - Adding/fixing tests
+- `chore:` - Build, CI/CD, etc.
+
+## 🐛 Known Issues and Limitations
+
+1. **IndexStore Requirement**: Best results require index store
+2. **SwiftUI Property Wrappers**: May produce false positives for @State, @Binding, etc.
+3. **Objective-C Interop**: Swift code used from Objective-C may not be fully detected
+4. **Reflection/Mirrors**: Code accessed via runtime reflection cannot be detected
+5. **String-based Selectors**: Selector strings are not fully detected by static analysis
+
+## 🗺️ Roadmap
+
+See [ROADMAP.md](ROADMAP.md) for the detailed roadmap.
+
+**Coming Soon:**
+- Homebrew formula
+- GitHub Action integration
+- Xcode Source Editor Extension
+- Web-based report viewer
+- Incremental analysis
+- ML-based false positive reduction
+
+## 📄 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- [swift-syntax](https://github.com/apple/swift-syntax) - Swift parser and syntax tree
+- [IndexStoreDB](https://github.com/apple/indexstore-db) - Index store access
 - [swift-argument-parser](https://github.com/apple/swift-argument-parser) - CLI argument parsing
 - [Yams](https://github.com/jpsim/Yams) - YAML parsing
 
-## 📧 İletişim
+## 📧 Contact
 
 - Issues: [GitHub Issues](https://github.com/yourusername/NSClear/issues)
 - Discussions: [GitHub Discussions](https://github.com/yourusername/NSClear/discussions)
 
 ---
 
-**NSClear ile Swift kodunuz temiz ve düzenli! 🧹✨**
-
+**Keep your Swift code clean with NSClear! 🧹✨**
